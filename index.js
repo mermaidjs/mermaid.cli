@@ -68,7 +68,7 @@ height = parseInt(height)
       const react = svg.getBoundingClientRect()
       return { x: react.left, y: react.top, width: react.width, height: react.height }
     })
-    await page.screenshot({ path: output, clip })
+    await page.screenshot({ path: output, omitBackground: true, clip })
   }
 
   browser.close()
