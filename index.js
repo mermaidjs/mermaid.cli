@@ -29,7 +29,7 @@ function safelyParseJSON (json) {
 
 commander
   .version(pkg.version)
-  .option('-t, --theme [name]', 'Theme of the chart, could be default, forest, dark or neutral. Optional. Default: default', /^default|forest|dark|neutral$/, 'default')
+  .option('-t, --theme [name]', 'Theme of the chart, could be default, forest, dark or neutral. Optional. Default: default', /^default|forest|dark|neutral$/, 'cli-default')
   .option('-w, --width [width]', 'Width of the page. Optional. Default: 800', /^\d+$/, '800')
   .option('-H, --height [height]', 'Height of the page. Optional. Default: 600', /^\d+$/, '600')
   .option('-i, --input <input>', 'Input mermaid file. Required.')
@@ -103,7 +103,9 @@ backgroundColor = backgroundColor || 'white'
 
   await page.$eval('#container', (container, definition, theme, myconfig, myCSS) => {
     container.innerHTML = definition
-    window.mermaid_config = { theme }
+    if (theme != "cli-default") {
+      window.mermaid_config = { theme }
+    }
 
     if (myconfig) {
     // See https://github.com/knsv/mermaid/blob/master/src/mermaidAPI.js
