@@ -12,9 +12,24 @@ const error = (message) => {
   process.exit(1)
 }
 
+// see https://stackoverflow.com/questions/29797946/handling-bad-json-parse-in-node-safely
+function safelyParseJSON (json) {
+  // This function cannot be optimised, it's best to
+  // keep it small!
+  var parsed
+
+  try {
+    parsed = JSON.parse(json)
+  } catch (e) {
+    error(e)
+  }
+
+  return parsed // Could be undefined!
+}
+
 commander
   .version(pkg.version)
-  .option('-t, --theme [name]', 'Theme of the chart, could be default, forest, dark or neutral. Optional. Default: default', /^default|forest|dark|neutral$/, 'default')
+  .option('-t, --theme [name]', 'Theme of the chart, could be default, forest, dark or neutral. Optional. Default: default', /^default|forest|dark|neutral$/, 'cli-default')
   .option('-w, --width [width]', 'Width of the page. Optional. Default: 800', /^\d+$/, '800')
   .option('-H, --height [height]', 'Height of the page. Optional. Default: 600', /^\d+$/, '600')
   .option('-i, --input <input>', 'Input mermaid file. Required.')
@@ -46,12 +61,15 @@ if (!fs.existsSync(outputDir)) {
   error(`Output directory "${outputDir}/" doesn't exist`)
 }
 
+var myconfig
+
 if (configFile) {
   if (!fs.existsSync(configFile)) {
     error(`Configuration file "${configFile}" doesn't exist`)
   } else if (!/\.(?:json)$/.test(configFile)) {
     error(`Config file must end with ".json"`)
   }
+  myconfig = safelyParseJSON(fs.readFileSync(configFile, 'utf-8'))
 }
 
 if (cssFile) {
@@ -77,11 +95,7 @@ backgroundColor = backgroundColor || 'white'
 
   const definition = fs.readFileSync(input, 'utf-8')
 
-  var myconfig, myCSS
-  
-  if (configFile) {
-    myconfig = JSON.parse(fs.readFileSync(configFile, 'utf-8'))
-  }
+  var myCSS
 
   if (cssFile) {
     myCSS = fs.readFileSync(cssFile, 'utf-8')
@@ -89,7 +103,9 @@ backgroundColor = backgroundColor || 'white'
 
   await page.$eval('#container', (container, definition, theme, myconfig, myCSS) => {
     container.innerHTML = definition
-    window.mermaid_config = { theme }
+    if (theme != "cli-default") {
+      window.mermaid_config = { theme }
+    }
 
     if (myconfig) {
     // See https://github.com/knsv/mermaid/blob/master/src/mermaidAPI.js
