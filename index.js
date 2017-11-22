@@ -22,9 +22,10 @@ commander
   .option('-b, --backgroundColor [backgroundColor]', 'Background color. Example: transparent, red, \'#F0F0F0\'. Optional. Default: white')
   .option('-c, --configFile [config]', 'JSON configuration file for mermaid. Optional')
   .option('-C, --cssFile [cssFile]', 'CSS alternate file for mermaid. Optional')
+  .option('-T, --customTheme <customThemeCssFile>', 'CSS file replacing CSS injected into SVG container. Optional')
   .parse(process.argv)
 
-let { theme, width, height, input, output, backgroundColor, configFile, cssFile } = commander
+let { theme, width, height, input, output, backgroundColor, configFile, cssFile, customTheme } = commander
 
 // check input file
 if (!input) {
@@ -62,6 +63,14 @@ if (cssFile) {
   }
 }
 
+if (customTheme) {
+  if (!fs.existsSync(customTheme)) {
+    error(`CSS file "${customTheme}" doesn't exist`)
+  } else if (!/\.(?:css)$/.test(customTheme)) {
+    error(`CSS file must end with ".css"`)
+  }
+}
+
 // normalize args
 width = parseInt(width)
 height = parseInt(height)
@@ -70,6 +79,7 @@ backgroundColor = backgroundColor || 'white'
 ;(async () => {
   const browser = await puppeteer.launch()
   const page = await browser.newPage()
+  page.on('console', msg => console.log('PAGE LOG:', ...msg.args))
   page.setViewport({ width, height })
   await page.goto(`file://${path.join(__dirname, 'index.html')}`)
 
@@ -77,8 +87,8 @@ backgroundColor = backgroundColor || 'white'
 
   const definition = fs.readFileSync(input, 'utf-8')
 
-  var myconfig, myCSS
-  
+  let myconfig, myCSS, myTheme
+
   if (configFile) {
     myconfig = JSON.parse(fs.readFileSync(configFile, 'utf-8'))
   }
@@ -87,7 +97,11 @@ backgroundColor = backgroundColor || 'white'
     myCSS = fs.readFileSync(cssFile, 'utf-8')
   }
 
-  await page.$eval('#container', (container, definition, theme, myconfig, myCSS) => {
+  if (customTheme) {
+    myTheme = fs.readFileSync(customTheme, 'utf-8')
+  }
+
+  await page.$eval('#container', (container, definition, theme, myconfig, myCSS, myTheme) => {
     container.innerHTML = definition
     window.mermaid_config = { theme }
 
@@ -111,7 +125,13 @@ backgroundColor = backgroundColor || 'white'
     }
 
     window.mermaid.init(undefined, container)
-  }, definition, theme, myconfig, myCSS)
+
+    if (myTheme) {
+      // console.log('Replacing CSS with Custom Theme')
+      window.document.getElementById('mermaidChart0').getElementsByTagName('style')[0].innerHTML = myTheme;
+    }
+
+  }, definition, theme, myconfig, myCSS, myTheme)
 
   if (output.endsWith('svg')) {
     const svg = await page.$eval('#container', container => container.innerHTML)
