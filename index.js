@@ -65,6 +65,10 @@ if (puppeteerConfigFile) {
   puppeteerConfig = JSON.parse(fs.readFileSync(puppeteerConfigFile, 'utf-8'))
 }
 
+// Chrome Headless fails due to sandbox issues: https://github.com/GoogleChrome/puppeteer/blob/master/docs/troubleshooting.md
+// temporary fix
+puppeteerConfig.args = ['--no-sandbox'];
+
 // check cssFile
 let myCSS
 if (cssFile) {
