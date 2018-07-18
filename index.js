@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 const commander = require('commander')
-const chalk = require('chalk')
+const tc = require('turbocolor')
 const fs = require('fs')
 const path = require('path')
 const puppeteer = require('puppeteer')
@@ -8,7 +8,7 @@ const puppeteer = require('puppeteer')
 const pkg = require('./package.json')
 
 const error = message => {
-  console.log(chalk.red(`\n${message}\n`))
+  console.log(tc.red(`\n${message}\n`))
   process.exit(1)
 }
 
