@@ -13,9 +13,9 @@
     "prepublishOnly": "babel ./index.js --out-file ./index.bundle.js"
   },
   "dependencies": {
-    "chalk": "^2.4.1",
     "commander": "^2.15.1",
-    "puppeteer": "^1.4.0"
+    "puppeteer": "^1.4.0",
+    "turbocolor": "2.3.0"
   },
   "devDependencies": {
     "@fortawesome/fontawesome-free-webfonts": "^1.0.9",
