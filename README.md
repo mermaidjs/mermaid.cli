@@ -5,6 +5,8 @@ Command-line interface for [mermaid](https://mermaidjs.github.io/).
 This CLI tool takes a mermaid definition file as input and generates svg/png/pdf file as output.
 
 
+
+
 ## Install locally
 
 Some people are [having issue](https://github.com/mermaidjs/mermaid.cli/issues/15) installing this tool globally. Installing it locally is an alternative solution:
@@ -36,6 +38,13 @@ yarn global add mermaid.cli
 npm install -g mermaid.cli
 ```
 
+## Use without installation (with npx)
+
+`npx` ships with npm since version 5.2. It lets you run npm commands. You can run the commands below by replacing `mmdc` with `npx mermaid.cli` for example the first command becomes
+
+```
+npx mermaid.cli -i input.mmd -o output.svg 
+```
 
 ## Examples
 
