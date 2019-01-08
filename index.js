@@ -116,7 +116,17 @@ backgroundColor = backgroundColor || 'white';
     })
     await page.screenshot({ path: output, clip, omitBackground: backgroundColor === 'transparent' })
   } else { // pdf
-    await page.pdf({ path: output, printBackground: backgroundColor !== 'transparent' })
+    const clip = yield page.$eval('svg', function (svg) {
+      const react = svg.getBoundingClientRect()
+      return { x: react.left, y: react.top, width: react.width, height: react.height }
+    })
+    yield page.pdf({
+      path: output,
+      printBackground: backgroundColor !== 'transparent',
+      width: (Math.ceil(clip.width) + clip.x*2) + 'px',
+      height: (Math.ceil(clip.height) + clip.y*2) + 'px',
+      pageRanges: '1-1',
+    })
   }
 
   browser.close()
