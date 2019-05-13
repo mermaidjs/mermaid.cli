@@ -23,6 +23,7 @@ commander
   .option('-t, --theme [theme]', 'Theme of the chart, could be default, forest, dark or neutral. Optional. Default: default', /^default|forest|dark|neutral$/, 'default')
   .option('-w, --width [width]', 'Width of the page. Optional. Default: 800', /^\d+$/, '800')
   .option('-H, --height [height]', 'Height of the page. Optional. Default: 600', /^\d+$/, '600')
+  .option('-d, --dpi [scaleFactor]', 'Pixel density factor. Example: 2 for "retina" output. Default: 1. Optional', /^\d$/, '1')
   .option('-i, --input <input>', 'Input mermaid file. Required.')
   .option('-o, --output [output]', 'Output file. It should be either svg, png or pdf. Optional. Default: input + ".svg"')
   .option('-b, --backgroundColor [backgroundColor]', 'Background color. Example: transparent, red, \'#F0F0F0\'. Optional. Default: white')
@@ -31,8 +32,7 @@ commander
   .option('-p --puppeteerConfigFile [puppeteerConfigFile]', 'JSON configuration file for puppeteer. Optional')
   .parse(process.argv)
 
-let { theme, width, height, input, output, backgroundColor, configFile, cssFile, puppeteerConfigFile } = commander
-
+let { theme, width, height, dpi, input, output, backgroundColor, configFile, cssFile, puppeteerConfigFile } = commander
 // check input file
 if (!input) {
   error('Please specify input file: -i <input>')
@@ -77,12 +77,13 @@ if (cssFile) {
 // normalize args
 width = parseInt(width)
 height = parseInt(height)
+dpi = parseInt(dpi)
 backgroundColor = backgroundColor || 'white';
 
 (async () => {
   const browser = await puppeteer.launch(puppeteerConfig)
   const page = await browser.newPage()
-  page.setViewport({ width, height })
+  page.setViewport({ width, height, deviceScaleFactor: dpi })
   await page.goto(`file://${path.join(__dirname, 'index.html')}`)
   await page.evaluate(`document.body.style.background = '${backgroundColor}'`)
   const definition = fs.readFileSync(input, 'utf-8')
