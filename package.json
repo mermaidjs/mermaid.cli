@@ -21,7 +21,7 @@
     "@fortawesome/fontawesome-free-webfonts": "^1.0.9",
     "babel-cli": "^6.26.0",
     "babel-preset-env": "^1.7.0",
-    "mermaid": "^8.0.0-rc.8",
+    "mermaid": "^8.2.3",
     "standard": "^11.0.1",
     "yarn-upgrade-all": "^0.3.0"
   },
