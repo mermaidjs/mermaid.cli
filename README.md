@@ -67,6 +67,10 @@ mmdc -i input.mmd -o output.png -b '#FFF000'
 mmdc -i input.mmd -o output.png -b transparent
 ```
 
+```
+mmdc -f png < input.mmd > output.png
+```
+
 
 ## Options
 

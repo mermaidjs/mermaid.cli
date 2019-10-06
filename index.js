@@ -3,6 +3,7 @@ const commander = require('commander')
 const chalk = require('chalk')
 const fs = require('fs')
 const path = require('path')
+const stream = require('stream')
 const puppeteer = require('puppeteer')
 
 const pkg = require('./package.json')
@@ -18,12 +19,48 @@ const checkConfigFile = file => {
   }
 }
 
+const readStreamToString = async (inputStream, encoding) => {
+  return new Promise((resolve, reject) => {
+    let chunks = ''
+    inputStream.setEncoding(encoding)
+    inputStream
+      .on('error', reject)
+      .on('data', chunk => (chunks += chunk))
+      .on('end', () => resolve(chunks))
+  })
+}
+
+const createMemoryStream = input => {
+  var stringStream = new stream.Readable()
+  stringStream.push(input)
+  stringStream.push(null)
+  return stringStream
+}
+
+const writeStreamToStream = async (inputStream, outputStream, standardOutput) => {
+  return new Promise((resolve, reject) => {
+    outputStream
+      .on('error', reject)
+      .on('finish', () => outputStream.close(resolve))
+    inputStream
+      .on('error', reject)
+      .on('end', () => {
+        if (standardOutput) {
+          process.nextTick(resolve)
+        }
+      })
+      .pipe(outputStream)
+      .on('error', reject)
+  })
+}
+
 commander
   .version(pkg.version)
   .option('-t, --theme [theme]', 'Theme of the chart, could be default, forest, dark or neutral. Optional. Default: default', /^default|forest|dark|neutral$/, 'default')
   .option('-w, --width [width]', 'Width of the page. Optional. Default: 800', /^\d+$/, '800')
   .option('-H, --height [height]', 'Height of the page. Optional. Default: 600', /^\d+$/, '600')
-  .option('-i, --input <input>', 'Input mermaid file. Required.')
+  .option('-f, --format [format]', 'Output format. Optional. Default: inferred from the file extension or svg')
+  .option('-i, --input [input]', 'Input mermaid file. Optional. Default: standard input')
   .option('-o, --output [output]', 'Output file. It should be either svg, png or pdf. Optional. Default: input + ".svg"')
   .option('-b, --backgroundColor [backgroundColor]', 'Background color. Example: transparent, red, \'#F0F0F0\'. Optional. Default: white')
   .option('-c, --configFile [configFile]', 'JSON configuration file for mermaid. Optional')
@@ -31,26 +68,39 @@ commander
   .option('-p --puppeteerConfigFile [puppeteerConfigFile]', 'JSON configuration file for puppeteer. Optional')
   .parse(process.argv)
 
-let { theme, width, height, input, output, backgroundColor, configFile, cssFile, puppeteerConfigFile } = commander
+let { theme, width, height, format, input, output, backgroundColor, configFile, cssFile, puppeteerConfigFile } = commander
 
-// check input file
-if (!input) {
-  error('Please specify input file: -i <input>')
+// check input file or use standard input
+let inputStream
+if (input) {
+  if (!fs.existsSync(input)) {
+    error(`Input file "${input}" doesn't exist`)
+  }
+  inputStream = fs.createReadStream(input)
+} else {
+  inputStream = process.stdin
 }
-if (!fs.existsSync(input)) {
-  error(`Input file "${input}" doesn't exist`)
+
+// check format
+if (format) {
+  if (!/^svg|png|pdf$/.test(format)) {
+    error('Output format must be ".svg", ".png" or ".pdf"')
+  }
 }
 
 // check output file
-if (!output) {
-  output = input + '.svg'
+if (!output && input) {
+  output = input + '.' + (format || 'svg')
 }
-if (!/\.(?:svg|png|pdf)$/.test(output)) {
-  error(`Output file must end with ".svg", ".png" or ".pdf"`)
-}
-const outputDir = path.dirname(output)
-if (!fs.existsSync(outputDir)) {
-  error(`Output directory "${outputDir}/" doesn't exist`)
+if (output) {
+  if (!/\.(?:svg|png|pdf)$/.test(output)) {
+    error('Output file must end with ".svg", ".png" or ".pdf"')
+  }
+  const outputDir = path.dirname(output)
+  if (!fs.existsSync(outputDir)) {
+    error(`Output directory "${outputDir}/" doesn't exist`)
+  }
+  format = path.extname(output).substr(1)
 }
 
 // check config files
@@ -85,7 +135,7 @@ backgroundColor = backgroundColor || 'white';
   page.setViewport({ width, height })
   await page.goto(`file://${path.join(__dirname, 'index.html')}`)
   await page.evaluate(`document.body.style.background = '${backgroundColor}'`)
-  const definition = fs.readFileSync(input, 'utf-8')
+  const definition = await readStreamToString(inputStream, 'utf8')
 
   await page.$eval('#container', (container, definition, mermaidConfig, myCSS) => {
     container.innerHTML = definition
@@ -106,18 +156,22 @@ backgroundColor = backgroundColor || 'white';
     window.mermaid.init(undefined, container)
   }, definition, mermaidConfig, myCSS)
 
-  if (output.endsWith('svg')) {
-    const svg = await page.$eval('#container', container => container.innerHTML)
-    fs.writeFileSync(output, svg)
-  } else if (output.endsWith('png')) {
+  let content
+  if (!format || format === 'svg') {
+    content = await page.$eval('#container', container => container.innerHTML)
+  } else if (format === 'png') {
     const clip = await page.$eval('svg', svg => {
       const react = svg.getBoundingClientRect()
       return { x: react.left, y: react.top, width: react.width, height: react.height }
     })
-    await page.screenshot({ path: output, clip, omitBackground: backgroundColor === 'transparent' })
+    content = await page.screenshot({ clip, omitBackground: backgroundColor === 'transparent' })
   } else { // pdf
-    await page.pdf({ path: output, printBackground: backgroundColor !== 'transparent' })
+    content = await page.pdf({ printBackground: backgroundColor !== 'transparent' })
   }
+  content = createMemoryStream(content)
+
+  const target = output ? fs.createWriteStream(output) : process.stdout
+  await writeStreamToStream(content, target, !output)
 
   browser.close()
 })()
