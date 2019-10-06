@@ -37,18 +37,15 @@ const createMemoryStream = input => {
   return stringStream
 }
 
-const writeStreamToStream = async (inputStream, outputStream, standardOutput) => {
+const writeStreamToStream = async (inputStream, outputStream) => {
+  const stdout = outputStream === process.stdout
   return new Promise((resolve, reject) => {
     outputStream
       .on('error', reject)
       .on('finish', () => outputStream.close(resolve))
     inputStream
       .on('error', reject)
-      .on('end', () => {
-        if (standardOutput) {
-          process.nextTick(resolve)
-        }
-      })
+      .on('end', () => stdout && process.nextTick(resolve))
       .pipe(outputStream)
       .on('error', reject)
   })
@@ -171,7 +168,7 @@ backgroundColor = backgroundColor || 'white';
   content = createMemoryStream(content)
 
   const target = output ? fs.createWriteStream(output) : process.stdout
-  await writeStreamToStream(content, target, !output)
+  await writeStreamToStream(content, target)
 
   browser.close()
 })()
