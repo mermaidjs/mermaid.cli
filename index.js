@@ -31,7 +31,7 @@ const readStreamToString = async (inputStream, encoding) => {
 }
 
 const createMemoryStream = input => {
-  var stringStream = new stream.Readable()
+  const stringStream = new stream.Readable()
   stringStream.push(input)
   stringStream.push(null)
   return stringStream
