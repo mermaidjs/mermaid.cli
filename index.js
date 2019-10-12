@@ -81,7 +81,7 @@ if (input) {
 // check format
 if (format) {
   if (!/^svg|png|pdf$/.test(format)) {
-    error('Output format must be ".svg", ".png" or ".pdf"')
+    error('Output format must be "svg", "png" or "pdf"')
   }
 }
 
