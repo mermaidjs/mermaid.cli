@@ -6,34 +6,22 @@
   "repository": "git@github.com:mermaidjs/mermaid.cli.git",
   "author": "Tyler Long <tyler4long@gmail.com>",
   "bin": {
-    "mmdc": "./index.bundle.js"
+    "mmdc": "./index.js"
   },
   "scripts": {
-    "upgrade": "yarn-upgrade-all && source copy_modules.sh",
-    "prepublishOnly": "babel ./index.js --out-file ./index.bundle.js"
+    "postinstall": "node ./init.js"
   },
   "dependencies": {
     "chalk": "^2.4.1",
     "commander": "^2.15.1",
-    "puppeteer": "^1.4.0"
+    "puppeteer": "^1.4.0",
+    "@fortawesome/fontawesome-free-webfonts": "1.0.9"
   },
-  "devDependencies": {
-    "@fortawesome/fontawesome-free-webfonts": "^1.0.9",
-    "babel-cli": "^6.26.0",
-    "babel-preset-env": "^1.7.0",
-    "mermaid": "^8.0.0-rc.8",
-    "standard": "^11.0.1",
-    "yarn-upgrade-all": "^0.3.0"
+  "peerDependencies": {
+    "mermaid": "8.x"
   },
   "files": [
-    "index.bundle.js",
-    "mermaid.min.js",
     "index.html",
     "fontawesome/*"
-  ],
-  "standard": {
-    "ignore": [
-      "index.bundle.js"
-    ]
-  }
+  ]
 }
