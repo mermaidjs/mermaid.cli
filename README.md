@@ -1,3 +1,5 @@
+# Development has been moved to https://github.com/mermaid-js
+
 # mermaid.cli
 
 Command-line interface for [mermaid](https://mermaidjs.github.io/).
