@@ -1,4 +1,4 @@
-# Development has been moved to https://github.com/mermaid-js
+# Development has been moved to https://github.com/mermaid-js/mermaid-cli
 
 # mermaid.cli
 
