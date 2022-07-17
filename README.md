@@ -9,7 +9,7 @@ This CLI tool takes a mermaid definition file as input and generates svg/png/pdf
 
 ## Install locally
 
-Some people are [having issue](https://github.com/mermaidjs/mermaid.cli/issues/15) installing this tool globally. Installing it locally is an alternative solution:
+Some people are [having an issue](https://github.com/mermaidjs/mermaid.cli/issues/15) installing this tool globally. Installing it locally is an alternative solution:
 
 ```
 yarn add mermaid.cli
@@ -112,7 +112,7 @@ node:8281) UnhandledPromiseRejectionWarning: Error: Failed to launch chrome!
 [0416/091938.210735:FATAL:zygote_host_impl_linux.cc(124)] No usable sandbox! Update your kernel or see https://chromium.googlesource.com/chromium/src/+/master/docs/linux_suid_sandbox_development.md for more information on developing with the SUID sandbox. If you want to live dangerously and need an immediate workaround, you can try using --no-sandbox.
 ```
 
-First and foremost, you should not run as root and you should upgrade your Linux kernel to latest version.
+First and foremost, you should not run as root and you should upgrade your Linux kernel to the latest version.
 
 But if you don't want to follow the advice above and just want to disable sandbox, here you go:
 
