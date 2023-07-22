@@ -1,6 +1,6 @@
 # THIS REPO IS NO LONGER BEING ACTIVELY DEVELOPED
 
-> [!WARNING]
+> **Warning**
 >
 > **Development has been moved to https://github.com/mermaid-js/mermaid-cli**
 >
