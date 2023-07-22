@@ -1,4 +1,13 @@
-# Development has been moved to https://github.com/mermaid-js/mermaid-cli
+# THIS REPO IS NO LONGER BEING ACTIVELY DEVELOPED
+
+> [!WARNING]
+>
+> **Development has been moved to https://github.com/mermaid-js/mermaid-cli**
+>
+> The [`mermaid.cli`](https://www.npmjs.com/package/mermaid.cli) NPM package is no longer being updated and is very out-of-date.
+> Please use the [`@mermaid-js/mermaid-cli`](https://www.npmjs.com/package/@mermaid-js/mermaid-cli) NPM package instead.
+
+---
 
 # mermaid.cli
 
